@@ -2,11 +2,8 @@
 import random 
 import pandas as pd
 import os
-# sh,
-#from memprof import * # UNCOMMENT for memory Profiling
 
 
-#@memprof(plot = True) # UNCOMMENT for memory Profiling
 def preprocess_data(sampling_percent, input_file, output_file):
 	
 	df = pd.read_csv(input_file)# 4900 rows
@@ -35,14 +32,12 @@ def preprocess_data(sampling_percent, input_file, output_file):
 
 	# process each ap_id
 	for ap_id in arr_ap_id:
-		#ap_id = 'AP521696' #arr_ap_id[0]
 		df_ap_id = df_dup.query('ap_id == "'+ap_id+'"')
 		# get duplicate ts for the ap_id
 		arr_ts =  df_ap_id.timestamp.unique()
 		
 		# process each ts
 		for ts in arr_ts:
-			#ts = arr_ts[0]
 			df_ts = df_ap_id[df_ap_id['timestamp'].isin([ts])]
 			new_lat = df_ts['lat'].mean()
 			new_lon = df_ts['lon'].mean()
@@ -63,24 +58,15 @@ def preprocess_data(sampling_percent, input_file, output_file):
 
 
 def apply_sampling(sampling_percent, df_all):
-	
-	# lst = lst[:len(lst)-n]
-	
+		
 	arr_ap_id = df_all.ap_id.unique() # duplicate ap_id
-	#print (  len(arr_ap_id))
 		
 	id_count_to_keep = int(len(arr_ap_id) * sampling_percent * 0.01 ) 
-	#arr_ap_id = arr_ap_id[:id_count_to_keep]
 	if  id_count_to_keep == 0:
 		id_count_to_keep = 1
 		
-	
 	arr_ap_id_sampled = random.sample(list(arr_ap_id), id_count_to_keep)#  to randomly select samples
-	#print (  len(arr_ap_id_sampled))
-	
 	df_sample = df_all[df_all.ap_id.isin(arr_ap_id_sampled)]
-	#df[df.ap_id.isin(arr_ap_id)]
 	return df_sample
 	
-preprocess_data(5, 'input/original.csv', 'input/000000.csv')
 	

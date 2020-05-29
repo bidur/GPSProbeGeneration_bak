@@ -156,9 +156,9 @@ def psql_2_csv(csv_file_name, table_name):
 	
 	conn = connect()
 	sql_query = "SELECT *  FROM "+ table_name
-	df_okinawa = pd.read_sql_query(sql = sql_query, con = conn)
+	df_original = pd.read_sql_query(sql = sql_query, con = conn)
 	close_connection(conn)
-	df_okinawa.to_csv(csv_file_name,index=False)
+	df_original.to_csv(csv_file_name,index=False)
 	print("Preprocessed and CLipped File saved: ", csv_file_name)
 	print ("_________________________________________________________")
 			
@@ -171,7 +171,7 @@ def clip_data_for_selected_region():
 	
 	create_geometry_from_latlon(PROBE_TABLE_NAME)
 
-	#--- 3. Clip GPS points within Okinawa region	
+	#--- 3. Clip GPS points within original region	
 	clip_points_within_selected_region(CLIPPED_PROBE_TABLE) ### UNCOMMENT
 	
 	#--- 4.  save clean_clipped data to csv
@@ -252,9 +252,7 @@ def select_shp_file():
 	
 
 	filename, file_extension = os.path.splitext(INPUT_SHP_FILE)
-	#print (file_extension)
 	if file_extension == '.shp':
-		#drop_table(shp_table_name)# drop table if exists
 		drop_table(shp_table_name)# drop table if exists  
 		create_table_command = 'shp2pgsql -I -s 4326 '+INPUT_SHP_FILE+'  '+ shp_table_name +' | PGPASSWORD='+dbpassword+' psql -d '+database+' -h '+host+' -U '+dbuser+' '
 		print (create_table_command)
@@ -272,7 +270,6 @@ def select_shp_file():
 
 def get_sampling_percent(cur):         #<-- function to run
     SAMPLING_PERCENT = cur           #<-- 'cur' is the selected value
-    #print (SAMPLING_PERCENT)
  
  
  
@@ -374,22 +371,4 @@ lbl_generate_routes.grid(row=22,column=1)
 win.mainloop()
 
 
-
-
-
-'''
-Export to CSV:
-PGPASSWORD=postgres123 psql -d mobility -h 127.0.0.1 -U postgres -c "Copy (Select * From okinawa LIMIT 10) To STDOUT With CSV HEADER DELIMITER ',';" > foo_data.csv
-
-
-
-IMport from csv to DB
-PGPASSWORD=postgres123 psql -d mobility -h 127.0.0.1 -U postgres -c "\copy okinawa2 (id, ap_id, timestamp, lat,lon) FROM 'foo_data.csv' with DELIMITER ',' CSV HEADER;";
-
-'''
-
-
-
-
- 
 

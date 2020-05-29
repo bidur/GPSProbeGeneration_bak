@@ -1,19 +1,14 @@
 
 from pyroutelib3 import Router
 from annomize import anonymize_column_values
-#import shapely.wkt
-#from shapely.ops import nearest_points
 from shapely.geometry import Point
 import pandas as pd
 import os
-#sh
 import glob,sys
 from datetime import datetime
 from config import osm_data_source
-#from memprof import *
 import shutil
 import platform
-#platform.system() # 'Windows' , 'Linux'
 
 
 TEMP_DIR 	= './output/temp_csv/'
@@ -68,7 +63,6 @@ def merge_and_anonymize_csv(final_anonymized_csv):
 	combined_file = OUTPUT_DIR +'combined_csv.csv'  
 	
 	all_filenames = [i for i in glob.glob(TEMP_DIR+'*.{}'.format('csv'))] # get all csv files
-	#print ('all_filenames', all_filenames)
 	if (not len(all_filenames)):
 		print ('NO Output')
 		return
@@ -81,14 +75,11 @@ def merge_and_anonymize_csv(final_anonymized_csv):
 	
 	anonymize_column_values( 'ap_id', combined_file, final_anonymized_csv)
 	print ('FINAL Output: ', final_anonymized_csv)
-	#print ("Final output: %s"% anonymized_csv)
 	
 	#  remove temp files
 	remove_dir(TEMP_DIR)
 	
 
-# for memory profiling use the <@memprof> just before the function
-#@memprof(plot = True)
 def generate_route_main (ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, current_route):
 	
 	start_time = datetime.now()# start time
@@ -100,7 +91,6 @@ def generate_route_main (ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, 
 	lat1 =  26.66539
 	lon1 =  128.103902
 	'''	
-	#print ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, current_route
 	
 	arr_generated_rows = []
 	
@@ -119,7 +109,6 @@ def generate_route_main (ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, 
 	route = None
 	
 	try:
-		#result, route = router.doRoute(node1, node2)
 		status, route = router.doRoute(start, end) # Find the route - a list of OSM nodes
 	except:
 		print('XML parse error:',current_route)
@@ -139,7 +128,6 @@ def generate_route_main (ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, 
 		for (lat,lon) in routeLatLons:
 			
 			ts = ts1 + ts_interval * counter 
-			#node = data.rnodes[node_id]
 			print_line = ("%s,%f,%f,%s" % (ap_id,lat,lon,ts))
 			counter += 1
 			
@@ -162,7 +150,6 @@ def generate_route_main (ap_id,ts1, ts2, lat1,lon1, lat2, lon2, transport_mode, 
 	
 
 	time_msg = '\n'+ current_route +','+   str(len(arr_generated_rows)) +','+ status +','+ str(current_memory_mb) +','+ str(time_taken)+','+ str(start_time) +','+ str( end_time)  
-	#print (current_memory_mb, time_msg)
 	log_error(msg=time_msg, log_file="log_txn_time.txt")
 	
 	return arr_generated_rows # number of points got
@@ -175,11 +162,10 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 	row_count = len(df_single_ap)
 	transport_mode = 'car'
 	arr_generated_points = []
-	#ap_id = ''
 	log_error() #
 	for i in range(row_count-1):
 		
-		# Case B satisfies here -> same ap_id on multiple roads
+		#  same ap_id on multiple roads
 		
 		ts1 = df_single_ap.iloc[i].timestamp
 		ts2 = df_single_ap.iloc[i+1].timestamp
@@ -204,7 +190,6 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 		print ("%d Processing ...... %s "%(i,current_route))
 		
 		if lat1 == lat1 and lon1 == lon2:
-			#print ("\t\tsame timestamp -> different location. Skip")
 			print ('\t(STAYPOINT: same location -> different timestamp.)',current_route ,'  Skipping...' )
 			msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 ,'(StayPoint - DIFF Time  same location)')
 			log_error(msg, log_file = 'log_stayPoints.txt')
@@ -218,12 +203,10 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 			rows_got  = generate_route_main(ap_id, ts1, ts2, lat1,lon1, lat2,lon2, transport_mode, current_route)
 		 
 			if len(rows_got):				
-				# print current_route, len(rows_got)
 				arr_generated_points = arr_generated_points + rows_got
 				
 			else:
 				print ('ParseError!!!')
-				#msg = '(ParseError)',  lat1,lon1,ts1, lat2,lon2,ts2, current_route, '  NOT created'
 				msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 ,'(ParseError)')
 				log_error(msg)
 				continue
@@ -234,10 +217,8 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 			# because near points gets same osm_node id and cant generate points 
 			
 			print ('\t(same node)',current_route,'  Skipping...')
-			#msg = '(same OSM node)',  lat1,lon1,ts1, lat2,lon2,ts2, current_route, '  NOT created'
 			msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 , '(sameOSMnode)')
 			log_error(msg)
-			# manually add the [second] points
 		
 	
 	if len(arr_generated_points):# save data to csv
@@ -266,7 +247,6 @@ def get_processed_ap_id():
 	if os.path.isfile(TEMP_DIR):# if directory exists	
 	
 		arr_csv_files = glob.glob(TEMP_DIR + '*.csv') # all csv in TEMP_DIR
-		#print (arr_csv_files)
 		for path in arr_csv_files:
 			ap_id = path.replace('./output/temp_csv/','').replace('.csv','')
 			arr_ap_ids.append(ap_id)
@@ -319,8 +299,7 @@ def generate_osm_routes_main(input_csv_file,output_file ):
 		time_msg = '\n'+ap_id+','+  str(point_count) +','+ str(time_taken)+','+ str(start_time) +','+ str( datetime.now() )  
 		log_error(msg=time_msg, log_file="log_ap_id_time.txt")
 		
-	
-	
+
 	
 	# merge all csv files in TEMP_DIR to OUTPUT_DIR
 	merge_and_anonymize_csv(output_file )
