@@ -191,7 +191,7 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 		
 		if lat1 == lat1 and lon1 == lon2:
 			print ('\t(STAYPOINT: same location -> different timestamp.)',current_route ,'  Skipping...' )
-			msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 ,'(StayPoint - DIFF Time  same location)')
+			msg = '\n%s,%f,%f,%s,%f,%f,%s,%s'% (current_route, lat1,lon1,ts1,lat2,lon2,ts2 ,'(StayPoint - DIFF Time  same location)')
 			log_error(msg, log_file = 'log_stayPoints.txt')
 			continue
 			
@@ -207,7 +207,7 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 				
 			else:
 				print ('ParseError!!!')
-				msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 ,'(ParseError)')
+				msg = '\n%s,%f,%f,%s,%f,%f,%s,%s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 ,'(ParseError)')
 				log_error(msg)
 				continue
 		  
@@ -217,7 +217,7 @@ def generate_points_timestamp_for_single_ap(ap_id, df_single_ap):
 			# because near points gets same osm_node id and cant generate points 
 			
 			print ('\t(same node)',current_route,'  Skipping...')
-			msg = '\n %s, %f,%f,%s,%f,%f,%s, %s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 , '(sameOSMnode)')
+			msg = '\n%s,%f,%f,%s,%f,%f,%s,%s' % (current_route, lat1,lon1,ts1, lat2,lon2,ts2 , '(sameOSMnode)')
 			log_error(msg)
 		
 	
